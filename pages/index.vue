@@ -2,7 +2,7 @@
   <v-container>
     <div class="d-flex align-center mb-6">
       <h1 class="text-h4.5">Olá, <span class="text-primary"> {{ authStore.user?.name || 'Usuário' }} </span> </h1>
-      <v-chip v-if="authStore.isAdmin" color="blue" class="ml-4" size="small">
+      <v-chip v-if="authStore.isAdmin" color="blue" class="ml-1" size="small">
         Administrador
       </v-chip>
     </div>
