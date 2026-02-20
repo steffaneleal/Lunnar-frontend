@@ -1,8 +1,8 @@
 <template>
-  <v-container class="fill-height justify-center">
-    <v-card width="100%" max-width="400" class="pa-4">
+  <v-container class="fill-height justify-center align-center">
+    <v-card width="100%" max-width="450" class="pa-4">
       <v-card-title class="text-h5 font-weight-bold text-center">Entrar</v-card-title>
-      <v-card-subtitle class="text-center mb-4">Lunnar</v-card-subtitle>
+      <v-card-subtitle class="text-center mb-1">Lunnar</v-card-subtitle>
 
       <v-card-text>
         <v-form @submit.prevent="submit">
