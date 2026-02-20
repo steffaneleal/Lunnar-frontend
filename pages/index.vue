@@ -1,9 +1,11 @@
 <template>
   <v-container>
-    <h1 class="text-h4.5">Olá, <span class="text-primary"> {{ authStore.user?.name || 'Usuário' }} </span> </h1>
-    <v-chip :color="authStore.isAdmin ? 'blue' : 'green'" class="mb-6" size="small">
-      {{ authStore.isAdmin ? 'Administrador' : 'Cliente' }}
-    </v-chip>
+    <div class="d-flex align-center mb-6">
+      <h1 class="text-h4.5">Olá, <span class="text-primary"> {{ authStore.user?.name || 'Usuário' }} </span> </h1>
+      <v-chip v-if="authStore.isAdmin" color="blue" class="ml-4" size="small">
+        Administrador
+      </v-chip>
+    </div>
 
     <v-row>
       <v-col v-for="item in dashboardItems" :key="item.title" cols="12" sm="6" md="4">
