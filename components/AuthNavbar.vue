@@ -1,13 +1,13 @@
 <template>
-  <v-app-bar color="#1a1a22" theme="dark" flat border="b">
+  <v-app-bar color="#1c64c4" theme="light" flat border="b">
     <v-container class="d-flex align-center py-0">
-      <NuxtLink to="/" class="d-flex align-center text-decoration-none text-h6 font-weight-bold text-primary mr-8">
+      <NuxtLink to="/" class="d-flex align-center text-decoration-none text-h6 font-weight-regular text-primary mr-8 text-white">
         <v-img
-          src="../public/lunnar-icon-light.png"
+          src="/lunnar-icon.png"
           alt="Lunnar Logo"
           width="32"
           height="32"
-          class="mr-2"
+          class="mr-0.2"
         ></v-img>
         <span>Lunnar</span>
       </NuxtLink>

@@ -39,4 +39,14 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  app: {
+    head: {
+      title: 'Lunnar',
+      titleTemplate: '%s',
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/lunnar-icon.png' }
+      ]
+    }
+  }
 })
