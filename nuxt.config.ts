@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: false },
 
+  // SPA mode: desabilita SSR para evitar flash de autenticação
+  // (o app usa localStorage e não tem benefício real de SSR)
+  ssr: false,
+
   modules: ['@pinia/nuxt'],
 
   css: [
