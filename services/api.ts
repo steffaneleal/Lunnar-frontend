@@ -78,6 +78,19 @@ export function useApi() {
     register: (data: object) => _api!.post('/auth/register', data),
     getMe: () => _api!.get('/auth/me'),
 
+    // Upload
+    uploadImage: (file: File) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const token = localStorage.getItem('token')
+      return _api!.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      })
+    },
+
     // Categories
     getCategories: () => _api!.get('/categories'),
     getCategory: (id: string) => _api!.get(`/categories/${id}`),
