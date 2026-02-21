@@ -1,3 +1,4 @@
+<!-- CARRINHO -->
 <template>
   <v-container>
     <h1>Carrinho de Compras</h1>

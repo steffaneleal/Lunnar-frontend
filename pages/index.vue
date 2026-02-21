@@ -1,3 +1,4 @@
+<!-- HOME -->
 <template>
   <v-container>
     <div class="d-flex align-center mb-6">

@@ -1,3 +1,4 @@
+<!-- LOGIN -->
 <template>
   <v-container class="fill-height justify-center align-center">
     <v-card width="100%" max-width="450" class="pa-4">
@@ -6,6 +7,7 @@
 
       <v-card-text>
         <v-form @submit.prevent="submit">
+          <!-- Email -->
           <v-text-field
             v-model="email"
             label="E-mail"
@@ -15,6 +17,7 @@
             required
           ></v-text-field>
 
+          <!-- Senha -->
           <v-text-field
             v-model="password"
             label="Senha"
@@ -24,16 +27,19 @@
             required
           ></v-text-field>
 
+          <!-- Mensagem de erro -->
           <v-alert v-if="error" type="error" variant="tonal" class="mb-4" density="compact">
             {{ error }}
           </v-alert>
 
+          <!-- Botão -->
           <v-btn type="submit" block color="primary" size="large" :loading="loading">
             Entrar
           </v-btn>
         </v-form>
       </v-card-text>
 
+      <!-- Cadastre-se -->
       <v-card-actions class="justify-center">
         <span class="text-body-2 text-medium-emphasis">
           Não tem conta?
