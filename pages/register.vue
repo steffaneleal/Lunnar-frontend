@@ -17,6 +17,14 @@
             :rules="[rules.required]"
           ></v-text-field>
 
+          <!-- Nome da Empresa -->
+          <v-text-field
+            v-model="form.companyName"
+            label="Nome da Empresa (opcional)"
+            placeholder="Sua empresa"
+            variant="outlined"
+          ></v-text-field>
+
           <!-- Email -->
           <v-text-field
             v-model="form.email"
@@ -101,6 +109,7 @@ const api = useApi()
 const isFormValid = ref(false)
 const form = reactive({
   name: '',
+  companyName: '',
   email: '',
   password: '',
   password_confirmation: '',
@@ -151,6 +160,7 @@ async function submit() {
   try {
     const { data } = await api.register({
       name: form.name,
+      companyName: form.companyName,
       email: form.email,
       password: form.password,
       phone_number: form.phone_number.replace(/\D/g, ''), // Envia apenas os números
