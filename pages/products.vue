@@ -69,7 +69,7 @@
       <v-col v-for="p in products" :key="p.id" cols="12" sm="6" md="3" lg="3">
         <v-card height="100%" class="d-flex flex-column">
           <v-img
-            :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
+            :src="p.image_url || 'https://via.placeholder.com/300x200'"
             height="140px"
             cover
           ></v-img>
@@ -142,7 +142,7 @@
               accept="image/*"
               class="mb-2"
             ></v-file-input>
-            <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-2"></v-img>
+            <v-img v-if="form.image_url" :src="form.image_url" height="150px" class="mb-2"></v-img>
 
             <v-text-field
               v-model="form.name"
@@ -254,7 +254,7 @@ const form = reactive({
   price: '',
   stockQuantity: 0,
   categoryId: '',
-  imageUrl: '',
+  image_url: '',
 })
 
 const sortOptions = [
@@ -269,7 +269,7 @@ async function handleImageUpload(event: Event) {
 
   try {
     const { data } = await api.uploadImage(file)
-    form.imageUrl = data.url
+    form.image_url = data.url
   } catch (error) {
     alert('Erro ao fazer upload da imagem.')
     console.error(error)
@@ -356,7 +356,7 @@ function openEdit(p: any) {
   form.price = p.price
   form.stockQuantity = p.stockQuantity ?? 0
   form.categoryId = p.categoryId || ''
-  form.imageUrl = p.imageUrl || ''
+  form.image_url = p.image_url || ''
   showModal.value = true
 }
 
@@ -367,7 +367,7 @@ function clearForm() {
   form.price = ''
   form.stockQuantity = 0
   form.categoryId = ''
-  form.imageUrl = ''
+  form.image_url = ''
   showNewCategoryFields.value = false
   newCategoryName.value = ''
   newCategoryDescription.value = ''
@@ -390,7 +390,7 @@ async function saveProduct() {
       price: Number(form.price),
       stockQuantity: Number(form.stockQuantity) || 0,
       categoryId: form.categoryId || null,
-      imageUrl: form.imageUrl,
+      image_url: form.image_url,
     }
     if (editingId.value) {
       await api.updateProduct(editingId.value, payload)
