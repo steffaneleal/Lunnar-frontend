@@ -1,64 +1,26 @@
 import axios from 'axios'
 import type { AxiosInstance } from 'axios'
 
-// Cria instância axios reutilizável para o lado cliente
+// Singleton: criado uma única vez, interceptors registrados apenas uma vez
 let _api: AxiosInstance | null = null
+let _interceptorsRegistered = false
 
-function getApi(): AxiosInstance {
-  if (_api) return _api
-
-  const baseURL =
-    typeof window !== 'undefined'
-      ? (window.__NUXT__?.config?.public?.apiBase ?? 'http://localhost:8080')
-      : 'http://localhost:8080'
-
-  _api = axios.create({
+function createApi(baseURL: string): AxiosInstance {
+  const instance = axios.create({
     baseURL,
     headers: { 'Content-Type': 'application/json' },
   })
 
-  if (typeof window !== 'undefined') {
-    _api.interceptors.request.use((config) => {
+  if (import.meta.client && !_interceptorsRegistered) {
+    _interceptorsRegistered = true
+
+    instance.interceptors.request.use((cfg) => {
       const token = localStorage.getItem('token')
-      if (token) config.headers.Authorization = `Bearer ${token}`
-      return config
+      if (token) cfg.headers.Authorization = `Bearer ${token}`
+      return cfg
     })
 
-    _api.interceptors.response.use(
-      (res) => res,
-      (error) => {
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token')
-          localStorage.removeItem('user')
-          window.location.href = '/login'
-        }
-        return Promise.reject(error)
-      }
-    )
-  }
-
-  return _api
-}
-
-// Composable para usar dentro de setup()
-export function useApi() {
-  const config = useRuntimeConfig()
-  const baseURL = config.public.apiBase
-
-  if (!_api) {
-    _api = axios.create({
-      baseURL,
-      headers: { 'Content-Type': 'application/json' },
-    })
-
-    if (import.meta.client) {
-      _api.interceptors.request.use((cfg) => {
-        const token = localStorage.getItem('token')
-        if (token) cfg.headers.Authorization = `Bearer ${token}`
-        return cfg
-      })
-
-      _api.interceptors.response.use(
+    instance.interceptors.response.use(
         (res) => res,
         (error) => {
           if (error.response?.status === 401) {
@@ -68,8 +30,17 @@ export function useApi() {
           }
           return Promise.reject(error)
         }
-      )
-    }
+    )
+  }
+
+  return instance
+}
+
+// Composable para usar dentro de setup()
+export function useApi() {
+  if (!_api) {
+    const config = useRuntimeConfig()
+    _api = createApi(config.public.apiBase)
   }
 
   return {
@@ -104,7 +75,7 @@ export function useApi() {
     createProduct: (data: object) => _api!.post('/products', data),
     updateProduct: (id: string, data: object) => _api!.put(`/products/${id}`, data),
     updateProductStock: (id: string, stockQuantity: number) =>
-      _api!.patch(`/products/${id}/stock`, { stockQuantity }),
+        _api!.patch(`/products/${id}/stock`, { stockQuantity }),
     deleteProduct: (id: string) => _api!.delete(`/products/${id}`),
 
     // Pedidos
@@ -112,12 +83,16 @@ export function useApi() {
     getOrder: (id: string) => _api!.get(`/orders/${id}`),
     createOrder: (orderData: object) => _api!.post('/orders', orderData),
     updateOrderStatus: (id: string, status: string) =>
-      _api!.patch(`/orders/${id}/status`, { status }),
+        _api!.patch(`/orders/${id}/status`, { status }),
+
+    // Usuário logado
+    updateMe: (data: object) => _api!.put('/users/me', data),
 
     // Usuários e Endereços
     getCustomers: () => _api!.get('/customers'),
     getCustomer: (id: string) => _api!.get(`/customers/${id}`),
     getMyProfile: () => _api!.get('/customers/me'),
+    updateMyProfile: (data: object) => _api!.put('/customers/me', data),
     updateCustomer: (id: string, data: object) => _api!.put(`/customers/${id}`, data),
     getCustomerReport: (customerId: string) => _api!.get(`/customers/${customerId}/report`),
     getMyAddresses: () => _api!.get('/customers/me/addresses'),

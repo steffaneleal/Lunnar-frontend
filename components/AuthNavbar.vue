@@ -9,7 +9,7 @@
           height="32"
           class="mr-0.2"
         ></v-img>
-        <span>Lunnar</span>
+        <span class="text-white opacity-80">Lunnar</span>
       </NuxtLink>
       <v-spacer></v-spacer>
       <v-btn to="/login" :variant="isLoginPage ? 'tonal' : 'text'" :disabled="isLoginPage">

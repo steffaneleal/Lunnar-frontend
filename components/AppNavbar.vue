@@ -9,7 +9,7 @@
           height="32"
           class="mr-0.2"
         ></v-img>
-        <span>Lunnar</span>
+        <span class="text-white opacity-90">Lunnar</span>
       </NuxtLink>
 
       <v-btn variant="text" to="/">Início</v-btn>
