@@ -91,14 +91,14 @@ export function useApi() {
       })
     },
 
-    // Categories
+    // Categorias
     getCategories: () => _api!.get('/categories'),
     getCategory: (id: string) => _api!.get(`/categories/${id}`),
     createCategory: (data: object) => _api!.post('/categories', data),
     updateCategory: (id: string, data: object) => _api!.put(`/categories/${id}`, data),
     deleteCategory: (id: string) => _api!.delete(`/categories/${id}`),
 
-    // Products
+    // Produtos
     getProducts: (params = {}) => _api!.get('/products', { params }),
     getProduct: (id: string) => _api!.get(`/products/${id}`),
     createProduct: (data: object) => _api!.post('/products', data),
@@ -107,18 +107,21 @@ export function useApi() {
       _api!.patch(`/products/${id}/stock`, { stockQuantity }),
     deleteProduct: (id: string) => _api!.delete(`/products/${id}`),
 
-    // Orders
+    // Pedidos
     getOrders: () => _api!.get('/orders'),
     getOrder: (id: string) => _api!.get(`/orders/${id}`),
-    createOrder: (items: object[]) => _api!.post('/orders', { items }),
+    createOrder: (orderData: object) => _api!.post('/orders', orderData),
     updateOrderStatus: (id: string, status: string) =>
       _api!.patch(`/orders/${id}/status`, { status }),
 
-    // Customers
+    // Usuários e Endereços
     getCustomers: () => _api!.get('/customers'),
     getCustomer: (id: string) => _api!.get(`/customers/${id}`),
     getMyProfile: () => _api!.get('/customers/me'),
     updateCustomer: (id: string, data: object) => _api!.put(`/customers/${id}`, data),
     getCustomerReport: (customerId: string) => _api!.get(`/customers/${customerId}/report`),
+    getMyAddresses: () => _api!.get('/customers/me/addresses'),
+    addMyAddress: (data: object) => _api!.post('/customers/me/addresses', data),
+    deleteMyAddress: (id: string) => _api!.delete(`/customers/me/addresses/${id}`),
   }
 }
