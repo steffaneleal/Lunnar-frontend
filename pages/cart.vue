@@ -3,24 +3,26 @@
   <v-container>
     <h1>Carrinho de Compras</h1>
     <v-card v-if="cartStore.items.length > 0">
-      <v-list>
-        <v-list-item v-for="item in cartStore.items" :key="item.id">
-          <v-list-item-content>
-            <v-list-item-title>{{ item.name }}</v-list-item-title>
-            <v-list-item-subtitle>
-              {{ item.quantity }} x R$ {{ item.price.toFixed(2) }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action>
-            <v-btn icon @click="cartStore.removeItem(item.id)">
-              <v-icon>mdi-delete</v-icon>
-            </v-btn>
-          </v-list-item-action>
+      <v-list lines="two">
+        <v-list-item v-for="item in cartStore.items" :key="item.id" :title="item.name">
+          <template v-slot:subtitle>
+            {{ item.quantity }} x R$ {{ formatPrice(item.price) }}
+          </template>
+          <template v-slot:append>
+            <v-btn
+              :color="hoveredItemId === item.id ? 'red' : 'grey'"
+              :icon="hoveredItemId === item.id ? 'mdi-delete' : 'mdi-delete'"
+              variant="text"
+              @click="cartStore.removeItem(item.id)"
+              @mouseover="hoveredItemId = item.id"
+              @mouseleave="hoveredItemId = null"
+            ></v-btn>
+          </template>
         </v-list-item>
       </v-list>
       <v-divider></v-divider>
       <v-card-text class="text-right">
-        <strong>Total: R$ {{ cartStore.totalPrice.toFixed(2) }}</strong>
+        <strong>Total: R$ {{ formatPrice(cartStore.totalPrice) }}</strong>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -34,7 +36,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()
+const hoveredItemId = ref<number | null>(null)
+
+function formatPrice(value: number) {
+  return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 </script>
