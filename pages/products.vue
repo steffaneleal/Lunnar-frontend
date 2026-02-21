@@ -1,7 +1,7 @@
 <!-- PRODUTOS -->
 <template>
   <v-container>
-    <v-row class="mb-4" align="center">
+    <v-row class="mb-2" align="center">
       <v-col>
         <h1 class="text-h4">Produtos</h1>
       </v-col>
@@ -11,7 +11,7 @@
     </v-row>
 
     <!-- Filtros -->
-    <v-row class="mb-4 align-center">
+    <v-row class="mb-2 align-center">
       <!-- Buscar por nome -->
       <v-col cols="12" md="5">
         <v-text-field
@@ -66,11 +66,11 @@
 
     <!-- Card de Produto -->
     <v-row v-else>
-      <v-col v-for="p in products" :key="p.id" cols="12" sm="6" md="4" lg="3">
+      <v-col v-for="p in products" :key="p.id" cols="12" sm="6" md="3" lg="3">
         <v-card height="100%" class="d-flex flex-column">
           <v-img
             :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
-            height="200px"
+            height="140px"
             cover
           ></v-img>
           <v-card-title class="d-flex align-center">
@@ -81,8 +81,23 @@
             R$ {{ formatPrice(p.price) }}
           </v-card-subtitle>
           <v-card-text class="flex-grow-1">
-            <div class="text-body-2 text-medium-emphasis mb-2">{{ p.description || '—' }}</div>
-            <div class="text-caption mt-2">Estoque: {{ p.stockQuantity }}</div>
+            <div class="text-body-2 text-medium-emphasis mb-2 ">{{ p.description || '—' }}</div>
+            <div class="d-flex align-center">
+              <div class="text-caption">Estoque: {{ p.stockQuantity }}</div>
+              <v-spacer></v-spacer>
+              <v-text-field
+                v-if="!authStore.isAdmin"
+                v-model.number="p.quantityToAdd"
+                type="number"
+                density="compact"
+                variant="outlined"
+                hide-details
+                min="1"
+                :max="p.stockQuantity"
+                class="quantity-input"
+                style="max-width: 50px;"
+              ></v-text-field>
+            </div>
           </v-card-text>
           <v-card-actions>
             <template v-if="authStore.isAdmin">
@@ -95,7 +110,7 @@
                 block
                 color="primary"
                 variant="tonal"
-                @click="openAddToCartDialog(p)"
+                @click="addToCart(p)"
                 :disabled="p.stockQuantity < 1"
               >
                 Adicionar ao carrinho
@@ -105,31 +120,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <!-- Modal para adicionar ao carrinho -->
-    <v-dialog v-model="addToCartDialog" max-width="400">
-      <v-card v-if="selectedProduct">
-        <v-card-title>Adicionar ao Carrinho</v-card-title>
-        <v-card-text>
-          <p class="text-h6 text-primary mb-4">{{ selectedProduct.name }}</p>
-          <v-text-field
-            v-model.number="quantity"
-            type="number"
-            label="Quantidade"
-            min="1"
-            :max="selectedProduct.stockQuantity"
-            variant="outlined"
-            :hint="`Disponível: ${selectedProduct.stockQuantity}`"
-            persistent-hint
-          ></v-text-field>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="addToCartDialog = false">Cancelar</v-btn>
-          <v-btn color="primary" @click="confirmAddToCart">Adicionar</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <!-- Toast: produto adicionado -->
     <v-snackbar v-model="showSnackbar" timeout="3000">
@@ -152,7 +142,7 @@
               accept="image/*"
               class="mb-2"
             ></v-file-input>
-            <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-4"></v-img>
+            <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-2"></v-img>
 
             <v-text-field
               v-model="form.name"
@@ -252,11 +242,8 @@ const search = ref('')
 const categoryId = ref<string | null>(null)
 const sortBy = ref<string | null>(null)
 const showModal = ref(false)
-const addToCartDialog = ref(false)
 const showSnackbar = ref(false)
 const editingId = ref<string | null>(null)
-const selectedProduct = ref<any>(null)
-const quantity = ref(1)
 const addedMessage = ref('')
 const showNewCategoryFields = ref(false)
 const newCategoryName = ref('')
@@ -309,7 +296,7 @@ async function loadProducts() {
     if (search.value.trim()) params.search = search.value.trim()
     if (sortBy.value) params.sortBy = sortBy.value
     const { data } = await api.getProducts(params)
-    products.value = data
+    products.value = data.map((p: any) => ({ ...p, quantityToAdd: 1 }))
   } finally {
     loading.value = false
   }
@@ -327,7 +314,6 @@ function applyFilters() {
 function onCategorySelectChange(selectedId: any) {
   if (selectedId === '__new__') {
     showNewCategoryFields.value = true
-    // Set timeout to reset selection if user doesn't create new
     setTimeout(() => {
       if (form.categoryId === '__new__') {
         form.categoryId = ''
@@ -429,19 +415,25 @@ async function confirmDelete(p: any) {
   }
 }
 
-function openAddToCartDialog(p: any) {
-  selectedProduct.value = p
-  quantity.value = 1
-  addToCartDialog.value = true
-}
-
-function confirmAddToCart() {
-  if (!selectedProduct.value) return
-  const p = selectedProduct.value
-  const qty = Math.min(Math.max(1, quantity.value || 1), p.stockQuantity || 999)
-  cartStore.addItem(p, qty)
-  addedMessage.value = `"${p.name}" (${qty}) adicionado ao carrinho.`
+// Botão para adiconar ao carrinho
+function addToCart(product: any) {
+  const quantity = Math.max(1, product.quantityToAdd || 1)
+  cartStore.addItem(product, quantity)
+  addedMessage.value = `"${product.name}" (${quantity}) adicionado ao carrinho.`
   showSnackbar.value = true
-  addToCartDialog.value = false
 }
 </script>
+
+<!-- Estilização do input de quantidade, não consegui só com o vuetify -->
+<style scoped>
+.quantity-input :deep(.v-field__input) {
+  font-size: small;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-right: 5px;
+  min-height: 20px;
+}
+.quantity-input :deep(.v-field) {
+  min-height: 20px;
+}
+</style>
