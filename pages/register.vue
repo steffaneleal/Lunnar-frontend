@@ -6,7 +6,7 @@
       <v-card-subtitle class="text-center mb-0">Crie sua conta no Lunnar</v-card-subtitle>
 
       <v-card-text>
-        <v-form @submit.prevent="submit">
+        <v-form v-model="isFormValid" @submit.prevent="submit">
 
           <!-- Nome -->
           <v-text-field
@@ -14,7 +14,7 @@
             label="Nome"
             placeholder="Seu nome completo"
             variant="outlined"
-            required
+            :rules="[rules.required]"
           ></v-text-field>
 
           <!-- Email -->
@@ -24,7 +24,7 @@
             type="email"
             placeholder="seu@email.com"
             variant="outlined"
-            required
+            :rules="[rules.required, rules.email]"
           ></v-text-field>
 
           <!-- Senha -->
@@ -34,8 +34,7 @@
             type="password"
             placeholder="••••••••"
             variant="outlined"
-            required
-            minlength="6"
+            :rules="[rules.required, rules.minLength(6)]"
           ></v-text-field>
 
           <!-- Confirmar senha -->
@@ -45,7 +44,7 @@
             type="password"
             placeholder="••••••••"
             variant="outlined"
-            required
+            :rules="[rules.required, rules.passwordMatch(form.password)]"
           ></v-text-field>
 
           <!-- Telefone -->
@@ -55,6 +54,7 @@
             placeholder="(11) 99999-9999"
             variant="outlined"
             maxlength="15"
+            :rules="[rules.required]"
           ></v-text-field>
 
           <!-- Data de Nascimento -->
@@ -63,6 +63,7 @@
             label="Data de nascimento"
             type="date"
             variant="outlined"
+            :rules="[rules.required]"
           ></v-text-field>
 
           <v-alert v-if="error" type="error" variant="tonal" class="mb-4" density="compact">
@@ -70,7 +71,7 @@
           </v-alert>
 
           <!-- Botão -->
-          <v-btn type="submit" block color="primary" size="large" :loading="loading">
+          <v-btn type="submit" block color="primary" size="large" :loading="loading" :disabled="!isFormValid">
             Cadastrar
           </v-btn>
         </v-form>
@@ -96,6 +97,8 @@ const router = useRouter()
 const authStore = useAuthStore()
 const api = useApi()
 
+// Validações do formulário
+const isFormValid = ref(false)
 const form = reactive({
   name: '',
   email: '',
@@ -107,19 +110,43 @@ const form = reactive({
 const loading = ref(false)
 const error = ref('')
 
+// Validação do campo de senha
+const rules = {
+  required: (v: string) => !!v || 'Este campo é obrigatório.',
+  email: (v: string) => /.+@.+\..+/.test(v) || 'E-mail precisa ser válido.',
+  minLength: (len: number) => (v: string) => (v && v.length >= len) || `A senha deve ter no mínimo ${len} caracteres.`,
+  passwordMatch: (original: string) => (v: string) => v === original || 'As senhas não conferem.',
+}
+
+// Validação do campo de telefone
 watch(() => form.phone_number, (newValue) => {
-  let x = newValue.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/)
-  if (!x) return
-  form.phone_number = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '')
+  const digits = newValue.replace(/\D/g, '')
+  let formatted = ''
+  if (digits.length > 0) {
+    formatted = '(' + digits.substring(0, 2)
+  }
+  if (digits.length > 2) {
+    formatted += ') ' + digits.substring(2, 7)
+  }
+  if (digits.length > 7) {
+    formatted += '-' + digits.substring(7, 11)
+  }
+  form.phone_number = formatted
+})
+
+// Validação do campo de data de aniversário
+watch(() => form.birthdate, (newValue) => {
+  const parts = newValue.split('-')
+  if (parts[0] && parts[0].length > 4) {
+    parts[0] = parts[0].slice(0, 4)
+    form.birthdate = parts.join('-')
+  }
 })
 
 async function submit() {
-  error.value = ''
-  if (form.password !== form.password_confirmation) {
-    error.value = 'As senhas não conferem.'
-    return
-  }
+  if (!isFormValid.value) return
 
+  error.value = ''
   loading.value = true
   try {
     const { data } = await api.register({
