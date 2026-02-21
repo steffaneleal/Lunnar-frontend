@@ -12,49 +12,45 @@
 
     <!-- Filtros -->
     <v-row class="mb-2 align-center">
-      <!-- Buscar por nome -->
       <v-col cols="12" md="5">
         <v-text-field
-          v-model="search"
-          label="Buscar por nome"
-          variant="outlined"
-          density="compact"
-          hide-details
-          @keyup.enter="applyFilters"
+            v-model="search"
+            label="Buscar por nome"
+            variant="outlined"
+            density="compact"
+            hide-details
+            @keyup.enter="applyFilters"
         ></v-text-field>
       </v-col>
 
-      <!-- Selecionar categoria -->
       <v-col cols="12" md="3">
         <v-select
-          v-model="categoryId"
-          :items="categories"
-          item-title="name"
-          item-value="id"
-          label="Todas as categorias"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
+            v-model="categoryId"
+            :items="categories"
+            item-title="name"
+            item-value="id"
+            label="Todas as categorias"
+            variant="outlined"
+            density="compact"
+            hide-details
+            clearable
         ></v-select>
       </v-col>
 
-      <!-- Ordenar por preço -->
       <v-col cols="12" md="3">
         <v-select
-          v-model="sortBy"
-          :items="sortOptions"
-          item-title="text"
-          item-value="value"
-          label="Ordenar por"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
+            v-model="sortBy"
+            :items="sortOptions"
+            item-title="text"
+            item-value="value"
+            label="Ordenar por"
+            variant="outlined"
+            density="compact"
+            hide-details
+            clearable
         ></v-select>
       </v-col>
 
-      <!-- Botão de filtrar -->
       <v-col cols="12" md="1">
         <v-btn block color="secondary" variant="tonal" @click="applyFilters">Filtrar</v-btn>
       </v-col>
@@ -69,33 +65,40 @@
       <v-col v-for="p in products" :key="p.id" cols="12" sm="6" md="3" lg="3">
         <v-card height="100%" class="d-flex flex-column">
           <v-img
-            :src="p.image_url || 'https://via.placeholder.com/300x200'"
-            height="140px"
-            cover
+              :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
+              height="140px"
+              cover
           ></v-img>
-          <v-card-title class="d-flex align-center">
+          <v-card-title class="d-flex align-center flex-wrap">
             <span>{{ p.name }}</span>
-            <v-chip size="small" class="ml-2" v-if="p.categoryName">{{ p.categoryName }}</v-chip>
+            <template v-if="p.categories?.length">
+              <v-chip
+                  v-for="cat in p.categories"
+                  :key="cat.id"
+                  size="small"
+                  class="ml-1 mt-1"
+              >{{ cat.name }}</v-chip>
+            </template>
           </v-card-title>
           <v-card-subtitle class="text-primary font-weight-bold">
             R$ {{ formatPrice(p.price) }}
           </v-card-subtitle>
           <v-card-text class="flex-grow-1">
-            <div class="text-body-2 text-medium-emphasis mb-2 ">{{ p.description || '—' }}</div>
+            <div class="text-body-2 text-medium-emphasis mb-2">{{ p.description || '—' }}</div>
             <div class="d-flex align-center">
               <div class="text-caption">Estoque: {{ p.stockQuantity }}</div>
               <v-spacer></v-spacer>
               <v-text-field
-                v-if="!authStore.isAdmin"
-                v-model.number="p.quantityToAdd"
-                type="number"
-                density="compact"
-                variant="outlined"
-                hide-details
-                min="1"
-                :max="p.stockQuantity"
-                class="quantity-input"
-                style="max-width: 50px;"
+                  v-if="!authStore.isAdmin"
+                  v-model.number="p.quantityToAdd"
+                  type="number"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  min="1"
+                  :max="p.stockQuantity"
+                  class="quantity-input"
+                  style="max-width: 50px;"
               ></v-text-field>
             </div>
           </v-card-text>
@@ -107,11 +110,11 @@
             </template>
             <template v-else>
               <v-btn
-                block
-                color="primary"
-                variant="tonal"
-                @click="addToCart(p)"
-                :disabled="p.stockQuantity < 1"
+                  block
+                  color="primary"
+                  variant="tonal"
+                  @click="addToCart(p)"
+                  :disabled="p.stockQuantity < 1"
               >
                 Adicionar ao carrinho
               </v-btn>
@@ -136,77 +139,82 @@
         <v-card-text>
           <v-form @submit.prevent="saveProduct">
             <v-file-input
-              label="Imagem do produto"
-              variant="outlined"
-              @change="handleImageUpload"
-              accept="image/*"
-              class="mb-2"
+                label="Imagem do produto"
+                variant="outlined"
+                @change="handleImageUpload"
+                accept="image/*"
+                class="mb-2"
             ></v-file-input>
-            <v-img v-if="form.image_url" :src="form.image_url" height="150px" class="mb-2"></v-img>
+            <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-2"></v-img>
 
             <v-text-field
-              v-model="form.name"
-              label="Nome"
-              required
-              variant="outlined"
-              class="mb-2"
+                v-model="form.name"
+                label="Nome"
+                required
+                variant="outlined"
+                class="mb-2"
             ></v-text-field>
             <v-textarea
-              v-model="form.description"
-              label="Descrição"
-              rows="2"
-              variant="outlined"
-              class="mb-2"
+                v-model="form.description"
+                label="Descrição"
+                rows="2"
+                variant="outlined"
+                class="mb-2"
             ></v-textarea>
             <v-row>
               <v-col cols="6">
                 <v-text-field
-                  v-model="form.price"
-                  label="Preço"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  variant="outlined"
+                    v-model="form.price"
+                    label="Preço"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    required
+                    variant="outlined"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
-                  v-model.number="form.stockQuantity"
-                  label="Estoque"
-                  type="number"
-                  min="0"
-                  variant="outlined"
+                    v-model.number="form.stockQuantity"
+                    label="Estoque"
+                    type="number"
+                    min="0"
+                    variant="outlined"
                 ></v-text-field>
               </v-col>
             </v-row>
 
+            <!-- Seleção múltipla de categorias -->
             <v-select
-              v-model="form.categoryId"
-              :items="categoryOptions"
-              item-title="name"
-              item-value="id"
-              label="Categoria"
-              variant="outlined"
-              @update:model-value="onCategorySelectChange"
+                v-model="form.categoryIds"
+                :items="categoryOptions"
+                item-title="name"
+                item-value="id"
+                label="Categorias"
+                variant="outlined"
+                multiple
+                chips
+                closable-chips
+                class="mb-2"
+                @update:model-value="onCategorySelectChange"
             ></v-select>
 
             <v-expand-transition>
               <div v-if="showNewCategoryFields" class="pa-3 bg-gray rounded mb-3">
                 <p class="text-subtitle-2 mb-2">Nova Categoria</p>
                 <v-text-field
-                  v-model="newCategoryName"
-                  label="Nome da categoria"
-                  density="compact"
-                  variant="outlined"
-                  class="mb-2"
+                    v-model="newCategoryName"
+                    label="Nome da categoria"
+                    density="compact"
+                    variant="outlined"
+                    class="mb-2"
                 ></v-text-field>
                 <v-text-field
-                  v-model="newCategoryDescription"
-                  label="Descrição (opcional)"
-                  density="compact"
-                  variant="outlined"
-                  class="mb-2"
+                    v-model="newCategoryDescription"
+                    label="Descrição (opcional)"
+                    density="compact"
+                    variant="outlined"
+                    class="mb-2"
                 ></v-text-field>
                 <v-btn size="small" color="secondary" @click="createCategoryAndSelect">
                   Criar e usar
@@ -248,13 +256,14 @@ const addedMessage = ref('')
 const showNewCategoryFields = ref(false)
 const newCategoryName = ref('')
 const newCategoryDescription = ref('')
+
 const form = reactive({
   name: '',
   description: '',
   price: '',
   stockQuantity: 0,
-  categoryId: '',
-  image_url: '',
+  categoryIds: [] as string[],   // agora é lista
+  imageUrl: '',
 })
 
 const sortOptions = [
@@ -266,10 +275,9 @@ async function handleImageUpload(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
-
   try {
     const { data } = await api.uploadImage(file)
-    form.image_url = data.url
+    form.imageUrl = data.url
   } catch (error) {
     alert('Erro ao fazer upload da imagem.')
     console.error(error)
@@ -283,7 +291,6 @@ function formatPrice(value: any) {
 
 const categoryOptions = computed(() => {
   const opts = [...categories.value]
-  opts.unshift({ id: '', name: 'Nenhuma' })
   opts.push({ id: '__new__', name: '+ Nova categoria' })
   return opts
 })
@@ -311,14 +318,11 @@ function applyFilters() {
   loadProducts()
 }
 
-function onCategorySelectChange(selectedId: any) {
-  if (selectedId === '__new__') {
+function onCategorySelectChange(selectedIds: any[]) {
+  if (selectedIds.includes('__new__')) {
     showNewCategoryFields.value = true
-    setTimeout(() => {
-      if (form.categoryId === '__new__') {
-        form.categoryId = ''
-      }
-    }, 100)
+    // Remove o placeholder da seleção
+    form.categoryIds = selectedIds.filter(id => id !== '__new__')
   } else {
     showNewCategoryFields.value = false
   }
@@ -332,7 +336,7 @@ async function createCategoryAndSelect() {
       description: newCategoryDescription.value.trim() || '',
     })
     categories.value.push(data)
-    form.categoryId = data.id
+    form.categoryIds.push(data.id)
     showNewCategoryFields.value = false
     newCategoryName.value = ''
     newCategoryDescription.value = ''
@@ -355,8 +359,8 @@ function openEdit(p: any) {
   form.description = p.description || ''
   form.price = p.price
   form.stockQuantity = p.stockQuantity ?? 0
-  form.categoryId = p.categoryId || ''
-  form.image_url = p.image_url || ''
+  form.categoryIds = p.categories?.map((c: any) => c.id) || []
+  form.imageUrl = p.imageUrl || ''
   showModal.value = true
 }
 
@@ -366,8 +370,8 @@ function clearForm() {
   form.description = ''
   form.price = ''
   form.stockQuantity = 0
-  form.categoryId = ''
-  form.image_url = ''
+  form.categoryIds = []
+  form.imageUrl = ''
   showNewCategoryFields.value = false
   newCategoryName.value = ''
   newCategoryDescription.value = ''
@@ -379,18 +383,14 @@ function openNewProduct() {
 }
 
 async function saveProduct() {
-  if (form.categoryId === '__new__') {
-    alert('Crie a nova categoria com "Criar e usar" ou escolha uma categoria existente.')
-    return
-  }
   try {
     const payload = {
       name: form.name,
       description: form.description,
       price: Number(form.price),
       stockQuantity: Number(form.stockQuantity) || 0,
-      categoryId: form.categoryId || null,
-      image_url: form.image_url,
+      categoryIds: form.categoryIds,
+      imageUrl: form.imageUrl,
     }
     if (editingId.value) {
       await api.updateProduct(editingId.value, payload)
@@ -415,7 +415,6 @@ async function confirmDelete(p: any) {
   }
 }
 
-// Botão para adiconar ao carrinho
 function addToCart(product: any) {
   const quantity = Math.max(1, product.quantityToAdd || 1)
   cartStore.addItem(product, quantity)
@@ -424,7 +423,6 @@ function addToCart(product: any) {
 }
 </script>
 
-<!-- Estilização do input de quantidade, não consegui só com o vuetify -->
 <style scoped>
 .quantity-input :deep(.v-field__input) {
   font-size: small;
