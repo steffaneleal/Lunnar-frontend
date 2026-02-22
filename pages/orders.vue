@@ -51,9 +51,14 @@
           <v-list dense class="py-0">
             <v-list-subheader>Itens</v-list-subheader>
             <v-list-item v-for="(item, i) in selectedOrder.items" :key="i">
-              <v-list-item-title>{{ item.product_name }}</v-list-item-title>
+              <template v-slot:prepend>
+                <v-avatar size="40" rounded="0" class="mr-4">
+                  <v-img :src="item.productImageUrl || 'https://via.placeholder.com/150'"></v-img>
+                </v-avatar>
+              </template>
+              <v-list-item-title>{{ item.productName }}</v-list-item-title>
               <v-list-item-subtitle>
-                {{ item.quantity }} x R$ {{ formatPrice(item.unit_price) }}
+                {{ item.quantity }} x R$ {{ formatPrice(item.price || item.subtotal) }}
               </v-list-item-subtitle>
             </v-list-item>
           </v-list>
