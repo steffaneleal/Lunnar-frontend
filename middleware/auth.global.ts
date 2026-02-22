@@ -20,7 +20,7 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   // Rota exclusiva para admin
-  if (to.path === '/customers' && !authStore.isAdmin) {
+  if ((to.path === '/customers' || to.path === '/admin') && !authStore.isAdmin) {
     return navigateTo('/')
   }
 })

@@ -3,11 +3,11 @@
     <v-container class="d-flex align-center py-0">
       <NuxtLink to="/" class="d-flex align-center text-decoration-none text-h6 font-weight-regular text-primary mr-8 text-white">
         <v-img
-          src="/lunnar-icon.png"
-          alt="Lunnar Logo"
-          width="32"
-          height="32"
-          class="mr-0.2"
+            src="/lunnar-icon.png"
+            alt="Lunnar Logo"
+            width="32"
+            height="32"
+            class="mr-0.2"
         ></v-img>
         <span class="text-white opacity-90">Lunnar</span>
       </NuxtLink>
@@ -16,6 +16,7 @@
       <v-btn variant="text" to="/products">Produtos</v-btn>
       <v-btn variant="text" to="/orders">Pedidos</v-btn>
       <v-btn v-if="authStore.isAdmin" variant="text" to="/customers">Clientes</v-btn>
+      <v-btn v-if="authStore.isAdmin" variant="text" to="/admin">Administrador</v-btn>
       <v-spacer></v-spacer>
       <v-btn to="/cart" icon>
         <v-badge :content="cartStore.itemCount" color="red">

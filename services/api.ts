@@ -79,7 +79,7 @@ export function useApi() {
     deleteProduct: (id: string) => _api!.delete(`/products/${id}`),
 
     // Pedidos
-    getOrders: (status?: string) => _api!.get('/orders', { params: status ? { status } : {} }),
+    getOrders: () => _api!.get('/orders'),
     getOrder: (id: string) => _api!.get(`/orders/${id}`),
     createOrder: (orderData: object) => _api!.post('/orders', orderData),
     updateOrderStatus: (id: string, status: string) =>
@@ -88,6 +88,8 @@ export function useApi() {
 
     // Usuário logado
     updateMe: (data: object) => _api!.put('/users/me', data),
+    getAllUsers: () => _api!.get('/users'),
+    updateUserRole: (id: string, role: string) => _api!.patch(`/users/${id}/role`, { role }),
 
     // Usuários e Endereços
     getCustomers: () => _api!.get('/customers'),
