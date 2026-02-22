@@ -26,7 +26,7 @@
       <v-col class="pa-3" v-for="order in orders" :key="order.id" cols="12" sm="6" md="4">
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
-            <span>Pedido #{{ order.id.slice(0, 8) }}</span>
+            <span class="text-body-1">Pedido #{{ order.id.slice(0, 8) }}</span>
 
             <v-select
               v-if="authStore.isAdmin && order.status !== 'CANCELADO_PELO_CLIENTE'"
