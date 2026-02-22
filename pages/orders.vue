@@ -1,6 +1,19 @@
 <template>
   <v-container>
-    <h1 class="text-h4 mb-4">{{ authStore.isAdmin ? 'Todos os Pedidos' : 'Meus Pedidos' }}</h1>
+    <div class="d-flex justify-space-between align-center mb-4">
+      <h1 class="text-h4">{{ authStore.isAdmin ? 'Todos os Pedidos' : 'Meus Pedidos' }}</h1>
+      <v-select
+        v-if="authStore.isAdmin"
+        v-model="statusFilter"
+        :items="['PENDENTE', 'PAGO', 'ENVIADO', 'CONCLUIDO', 'CANCELADO', 'CANCELADO_PELO_CLIENTE']"
+        label="Filtrar por status"
+        density="compact"
+        variant="outlined"
+        hide-details
+        clearable
+        style="max-width: 250px;"
+      ></v-select>
+    </div>
 
     <v-progress-linear v-if="loading" indeterminate></v-progress-linear>
 
@@ -15,7 +28,6 @@
           <v-card-title class="d-flex justify-space-between align-center">
             <span>Pedido #{{ order.id.slice(0, 8) }}</span>
 
-            <!-- Se for Admin E o status for editável, mostra o dropdown -->
             <v-select
               v-if="authStore.isAdmin && order.status !== 'CANCELADO_PELO_CLIENTE'"
               v-model="order.status"
@@ -27,7 +39,6 @@
               @update:modelValue="updateStatus(order)"
             ></v-select>
 
-            <!-- Se for Cliente OU se o status for cancelado pelo cliente, mostra o chip -->
             <v-chip v-else :color="getStatusColor(order.status)" size="small" variant="tonal">
               {{ getStatusText(order.status) }}
             </v-chip>
@@ -85,7 +96,6 @@
         </v-card-text>
 
         <v-card-actions class="pa-4">
-          <!-- Ação do Cliente -->
           <v-btn
             v-if="!authStore.isAdmin && selectedOrder.status === 'PENDENTE'"
             color="red"
@@ -105,7 +115,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useApi } from '~/services/api'
 import Swal from 'sweetalert2'
@@ -117,6 +127,9 @@ const orders = ref<any[]>([])
 const loading = ref(true)
 const detailsModal = ref(false)
 const selectedOrder = ref<any>(null)
+const statusFilter = ref<string | null>(null)
+
+watch(statusFilter, () => loadOrders())
 
 function formatPrice(v: any) {
   return v != null ? Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'
@@ -199,7 +212,7 @@ async function confirmCancelOrder() {
 async function loadOrders() {
   loading.value = true
   try {
-    const { data } = await api.getOrders()
+    const { data } = await api.getOrders(statusFilter.value ?? undefined)
     orders.value = data
   } catch(err) {
     console.error("Falha ao carregar pedidos:", err)

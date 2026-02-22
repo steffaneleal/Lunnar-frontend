@@ -79,7 +79,7 @@ export function useApi() {
     deleteProduct: (id: string) => _api!.delete(`/products/${id}`),
 
     // Pedidos
-    getOrders: () => _api!.get('/orders'),
+    getOrders: (status?: string) => _api!.get('/orders', { params: status ? { status } : {} }),
     getOrder: (id: string) => _api!.get(`/orders/${id}`),
     createOrder: (orderData: object) => _api!.post('/orders', orderData),
     updateOrderStatus: (id: string, status: string) =>
