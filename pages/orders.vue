@@ -14,8 +14,22 @@
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
             <span>Pedido #{{ order.id.slice(0, 8) }}</span>
-            <v-chip :color="getStatusColor(order.status)" size="small" variant="tonal">
-              {{ order.status }}
+
+            <!-- Se for Admin E o status for editável, mostra o dropdown -->
+            <v-select
+              v-if="authStore.isAdmin && order.status !== 'CANCELADO_PELO_CLIENTE'"
+              v-model="order.status"
+              :items="['PENDENTE', 'PAGO', 'ENVIADO', 'CONCLUIDO', 'CANCELADO']"
+              density="compact"
+              variant="outlined"
+              hide-details
+              style="max-width: 180px; font-weight: normal;"
+              @update:modelValue="updateStatus(order)"
+            ></v-select>
+
+            <!-- Se for Cliente OU se o status for cancelado pelo cliente, mostra o chip -->
+            <v-chip v-else :color="getStatusColor(order.status)" size="small" variant="tonal">
+              {{ getStatusText(order.status) }}
             </v-chip>
           </v-card-title>
           <v-card-subtitle>{{ formatDate(order.createdAt) }}</v-card-subtitle>
@@ -37,7 +51,7 @@
         <v-card-title class="d-flex justify-space-between align-center">
           <span>Detalhes do Pedido #{{ selectedOrder.id.slice(0, 8) }}</span>
           <v-chip :color="getStatusColor(selectedOrder.status)" size="small">
-            {{ selectedOrder.status }}
+            {{ getStatusText(selectedOrder.status) }}
           </v-chip>
         </v-card-title>
         <v-card-subtitle>{{ formatDate(selectedOrder.createdAt) }}</v-card-subtitle>
@@ -71,20 +85,18 @@
         </v-card-text>
 
         <v-card-actions class="pa-4">
-          <template v-if="authStore.isAdmin">
-            <span class="text-subtitle-1">Alterar Status:</span>
-            <v-select
-              v-model="selectedOrder.status"
-              :items="['PENDENTE', 'PAGO', 'ENVIADO', 'CONCLUIDO', 'CANCELADO']"
-              density="compact"
-              variant="outlined"
-              hide-details
-              class="ml-4"
-              style="max-width: 200px;"
-              @update:modelValue="updateStatus"
-            ></v-select>
-          </template>
+          <!-- Ação do Cliente -->
+          <v-btn
+            v-if="!authStore.isAdmin && selectedOrder.status === 'PENDENTE'"
+            color="red"
+            variant="text"
+            @click="confirmCancelOrder"
+          >
+            Cancelar Pedido
+          </v-btn>
+
           <v-spacer></v-spacer>
+
           <v-btn variant="text" @click="detailsModal = false">Fechar</v-btn>
         </v-card-actions>
       </v-card>
@@ -96,6 +108,7 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useApi } from '~/services/api'
+import Swal from 'sweetalert2'
 
 const authStore = useAuthStore()
 const api = useApi()
@@ -120,26 +133,66 @@ function getStatusColor(status: string) {
     case 'PAGO': return 'blue'
     case 'ENVIADO': return 'cyan'
     case 'CONCLUIDO': return 'green'
+    case 'CANCELADO_PELO_CLIENTE': return 'red-darken-3'
     case 'CANCELADO': return 'red'
     default: return 'grey'
   }
 }
 
+function getStatusText(status: string) {
+  if (status === 'CANCELADO_PELO_CLIENTE') return 'CANCELADO PELO CLIENTE';
+  return status;
+}
+
 function openDetailsModal(order: any) {
-  selectedOrder.value = order
+  selectedOrder.value = { ...order }
   detailsModal.value = true
 }
 
-async function updateStatus() {
-  if (!selectedOrder.value) return;
-  const orderToUpdate = selectedOrder.value;
-
+async function updateStatus(order: any) {
   try {
-    await api.updateOrderStatus(orderToUpdate.id, orderToUpdate.status)
-    // Opcional: mostrar um snackbar de sucesso
+    await api.updateOrderStatus(order.id, order.status)
   } catch {
     alert('Erro ao atualizar status.')
-    loadOrders() // Recarrega tudo para garantir consistência em caso de erro
+    loadOrders()
+  }
+}
+
+async function confirmCancelOrder() {
+  detailsModal.value = false
+
+  const result = await Swal.fire({
+    title: 'Você tem certeza?',
+    text: "Deseja realmente cancelar este pedido?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Sim, cancelar!',
+    cancelButtonText: 'Não'
+  })
+
+  if (result.isConfirmed) {
+    try {
+      await api.cancelOrder(selectedOrder.value.id)
+
+      const index = orders.value.findIndex(o => o.id === selectedOrder.value.id)
+      if (index !== -1) {
+        orders.value[index].status = 'CANCELADO_PELO_CLIENTE'
+      }
+
+      Swal.fire(
+        'Cancelado!',
+        'Seu pedido foi cancelado.',
+        'success'
+      )
+    } catch (err) {
+      Swal.fire(
+        'Erro!',
+        'Não foi possível cancelar o pedido. Tente novamente.',
+        'error'
+      )
+    }
   }
 }
 

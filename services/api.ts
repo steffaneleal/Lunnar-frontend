@@ -84,6 +84,7 @@ export function useApi() {
     createOrder: (orderData: object) => _api!.post('/orders', orderData),
     updateOrderStatus: (id: string, status: string) =>
         _api!.patch(`/orders/${id}/status`, { status }),
+    cancelOrder: (id: string) => _api!.delete(`/orders/${id}`),
 
     // Usuário logado
     updateMe: (data: object) => _api!.put('/users/me', data),
