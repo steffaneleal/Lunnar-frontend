@@ -16,7 +16,10 @@
       <v-col v-for="c in customers" :key="c.id" cols="12" md="6" lg="4">
         <v-card height="100%">
           <v-card-title class="d-flex justify-space-between align-center">
-            {{ c.userName }}
+            <div>
+              <span>{{ c.userName }}</span>
+              <span v-if="c.companyName" class="text-grey text-body-2 ml-2">({{ c.companyName }})</span>
+            </div>
             <div>
               <v-btn
                 icon="mdi-chart-bar"
@@ -27,19 +30,21 @@
                 title="Relatório"
               ></v-btn>
               <v-btn
-                icon="mdi-pencil"
+                :icon="hoveredEditId === c.id ? 'mdi-pencil' : 'mdi-pencil'"
                 size="small"
                 variant="text"
-                color="secondary"
+                :color="hoveredEditId === c.id ? 'red' : 'grey'"
                 @click="openEdit(c)"
                 title="Editar"
+                @mouseover="hoveredEditId = c.id"
+                @mouseleave="hoveredEditId = null"
+                class="edit-button"
               ></v-btn>
             </div>
           </v-card-title>
           <v-card-text>
             <p class="mb-1"><strong>E-mail:</strong> {{ c.userEmail }}</p>
-            <p v-if="c.phoneNumber" class="mb-1"><strong>Telefone:</strong> {{ c.phoneNumber }}</p>
-            <p v-if="c.companyName" class="mb-1"><strong>Empresa:</strong> {{ c.companyName }}</p>
+            <p v-if="c.phoneNumber" class="mb-1"><strong>Telefone:</strong> {{ formatPhone(c.phoneNumber) }}</p>
             <v-sheet
               v-if="c.notes"
               color="surface-variant"
@@ -189,6 +194,17 @@ const editForm = reactive({ companyName: '', notes: '', lastContactAt: '' })
 const reportModal = ref(false)
 const report = ref<any>(null)
 const reportLoading = ref(false)
+const hoveredEditId = ref<string | null>(null)
+
+function formatPhone(phone: string) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3')
+  } else {
+    return digits.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+  }
+}
 
 function formatDate(d: string) {
   if (!d) return '—'
