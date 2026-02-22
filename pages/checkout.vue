@@ -32,10 +32,10 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-          color="primary"
-          @click="submitOrder"
-          :disabled="!selectedAddressId"
-          :loading="submittingOrder"
+            color="primary"
+            @click="submitOrder"
+            :disabled="!selectedAddressId"
+            :loading="submittingOrder"
         >
           Realizar Pedido
         </v-btn>
@@ -75,6 +75,8 @@ const error = ref('')
 async function loadAddresses() {
   loadingAddresses.value = true
   try {
+    // Garante que o Customer existe (cria automaticamente se for a primeira vez do usuário)
+    await api.getMyProfile()
     const { data } = await api.getMyAddresses()
     addresses.value = data
     if (data.length > 0) {
