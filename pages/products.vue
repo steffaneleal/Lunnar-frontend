@@ -1,7 +1,7 @@
 <!-- PRODUTOS -->
 <template>
   <v-container>
-    <v-row class="mb-2" align="center">
+    <v-row class="mb-4" align="center">
       <v-col>
         <h1 class="text-h4">Produtos</h1>
       </v-col>
@@ -11,46 +11,50 @@
     </v-row>
 
     <!-- Filtros -->
-    <v-row class="mb-2 align-center">
+    <v-row class="mb-4 align-center">
+      <!-- Buscar por nome -->
       <v-col cols="12" md="5">
         <v-text-field
-            v-model="search"
-            label="Buscar por nome"
-            variant="outlined"
-            density="compact"
-            hide-details
-            @keyup.enter="applyFilters"
+          v-model="search"
+          label="Buscar por nome"
+          variant="outlined"
+          density="compact"
+          hide-details
+          @keyup.enter="applyFilters"
         ></v-text-field>
       </v-col>
 
+      <!-- Selecionar categoria -->
       <v-col cols="12" md="3">
         <v-select
-            v-model="categoryId"
-            :items="categories"
-            item-title="name"
-            item-value="id"
-            label="Todas as categorias"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
+          v-model="categoryId"
+          :items="categories"
+          item-title="name"
+          item-value="id"
+          label="Todas as categorias"
+          variant="outlined"
+          density="compact"
+          hide-details
+          clearable
         ></v-select>
       </v-col>
 
+      <!-- Ordenar por preço -->
       <v-col cols="12" md="3">
         <v-select
-            v-model="sortBy"
-            :items="sortOptions"
-            item-title="text"
-            item-value="value"
-            label="Ordenar por"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
+          v-model="sortBy"
+          :items="sortOptions"
+          item-title="text"
+          item-value="value"
+          label="Ordenar por"
+          variant="outlined"
+          density="compact"
+          hide-details
+          clearable
         ></v-select>
       </v-col>
 
+      <!-- Botão de filtrar -->
       <v-col cols="12" md="1">
         <v-btn block color="secondary" variant="tonal" @click="applyFilters">Filtrar</v-btn>
       </v-col>
@@ -65,44 +69,38 @@
       <v-col v-for="p in products" :key="p.id" cols="12" sm="6" md="3" lg="3">
         <v-card height="100%" class="d-flex flex-column">
           <v-img
-              :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
-              height="140px"
-              cover
+            :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
+            height="140px"
+            cover
           ></v-img>
-          <v-card-title class="d-flex align-center flex-wrap">
+          <v-card-title class="d-flex align-center">
             <span>{{ p.name }}</span>
-            <template v-if="p.categories?.length">
-              <v-chip
-                  v-for="cat in p.categories"
-                  :key="cat.id"
-                  size="small"
-                  class="ml-1 mt-1"
-              >{{ cat.name }}</v-chip>
-            </template>
+            <v-chip size="small" class="ml-2" v-if="p.categoryName">{{ p.categoryName }}</v-chip>
           </v-card-title>
           <v-card-subtitle class="text-primary font-weight-bold">
             R$ {{ formatPrice(p.price) }}
           </v-card-subtitle>
           <v-card-text class="flex-grow-1">
-            <div class="text-body-2 text-medium-emphasis mb-2">{{ p.description || '—' }}</div>
-            <div class="d-flex align-center">
+            <div class="text-body-2 text-medium-emphasis mb-4">{{ p.description || '—' }}</div>
+            <div class="d-flex align-center mt-2">
               <div class="text-caption">Estoque: {{ p.stockQuantity }}</div>
               <v-spacer></v-spacer>
               <v-text-field
-                  v-if="!authStore.isAdmin"
-                  v-model.number="p.quantityToAdd"
-                  type="number"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  min="1"
-                  :max="p.stockQuantity"
-                  class="quantity-input"
-                  style="max-width: 50px;"
+                v-if="!authStore.isAdmin"
+                v-model.number="p.quantityToAdd"
+                type="number"
+                density="compact"
+                variant="outlined"
+                hide-details
+                min="1"
+                :max="p.stockQuantity"
+                class="quantity-input"
+                style="max-width: 65px;"
+                @update:modelValue="validateQuantity(p)"
               ></v-text-field>
             </div>
           </v-card-text>
-          <v-card-actions>
+          <v-card-actions class="pt-0">
             <template v-if="authStore.isAdmin">
               <v-btn variant="text" color="secondary" @click="openEdit(p)">Editar</v-btn>
               <v-spacer></v-spacer>
@@ -110,11 +108,11 @@
             </template>
             <template v-else>
               <v-btn
-                  block
-                  color="primary"
-                  variant="tonal"
-                  @click="addToCart(p)"
-                  :disabled="p.stockQuantity < 1"
+                block
+                color="primary"
+                variant="tonal"
+                @click="addToCart(p)"
+                :disabled="p.stockQuantity < 1"
               >
                 Adicionar ao carrinho
               </v-btn>
@@ -137,84 +135,78 @@
       <v-card>
         <v-card-title>{{ editingId ? 'Editar produto' : 'Novo produto' }}</v-card-title>
         <v-card-text>
-          <v-form @submit.prevent="saveProduct">
+          <v-form v-model="isFormValid" @submit.prevent="saveProduct">
             <v-file-input
-                label="Imagem do produto"
-                variant="outlined"
-                @change="handleImageUpload"
-                accept="image/*"
-                class="mb-2"
+              label="Imagem do produto"
+              variant="outlined"
+              @change="handleImageUpload"
+              accept="image/*"
+              class="mb-2"
             ></v-file-input>
-            <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-2"></v-img>
+            <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-4"></v-img>
 
             <v-text-field
-                v-model="form.name"
-                label="Nome"
-                required
-                variant="outlined"
-                class="mb-2"
+              v-model="form.name"
+              label="Nome"
+              variant="outlined"
+              class="mb-2"
+              :rules="[rules.required]"
             ></v-text-field>
             <v-textarea
-                v-model="form.description"
-                label="Descrição"
-                rows="2"
-                variant="outlined"
-                class="mb-2"
+              v-model="form.description"
+              label="Descrição"
+              rows="2"
+              variant="outlined"
+              class="mb-2"
+              :rules="[rules.required]"
             ></v-textarea>
             <v-row>
               <v-col cols="6">
                 <v-text-field
-                    v-model="form.price"
-                    label="Preço"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    required
-                    variant="outlined"
+                  v-model="form.price"
+                  label="Preço"
+                  prefix="R$"
+                  variant="outlined"
+                  :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
-                    v-model.number="form.stockQuantity"
-                    label="Estoque"
-                    type="number"
-                    min="0"
-                    variant="outlined"
+                  v-model.number="form.stockQuantity"
+                  label="Estoque"
+                  type="number"
+                  min="0"
+                  variant="outlined"
                 ></v-text-field>
               </v-col>
             </v-row>
 
-            <!-- Seleção múltipla de categorias -->
             <v-select
-                v-model="form.categoryIds"
-                :items="categoryOptions"
-                item-title="name"
-                item-value="id"
-                label="Categorias"
-                variant="outlined"
-                multiple
-                chips
-                closable-chips
-                class="mb-2"
-                @update:model-value="onCategorySelectChange"
+              v-model="form.categoryId"
+              :items="categoryOptions"
+              item-title="name"
+              item-value="id"
+              label="Categoria"
+              variant="outlined"
+              @update:model-value="onCategorySelectChange"
             ></v-select>
 
             <v-expand-transition>
               <div v-if="showNewCategoryFields" class="pa-3 bg-gray rounded mb-3">
                 <p class="text-subtitle-2 mb-2">Nova Categoria</p>
                 <v-text-field
-                    v-model="newCategoryName"
-                    label="Nome da categoria"
-                    density="compact"
-                    variant="outlined"
-                    class="mb-2"
+                  v-model="newCategoryName"
+                  label="Nome da categoria"
+                  density="compact"
+                  variant="outlined"
+                  class="mb-2"
                 ></v-text-field>
                 <v-text-field
-                    v-model="newCategoryDescription"
-                    label="Descrição (opcional)"
-                    density="compact"
-                    variant="outlined"
-                    class="mb-2"
+                  v-model="newCategoryDescription"
+                  label="Descrição (opcional)"
+                  density="compact"
+                  variant="outlined"
+                  class="mb-2"
                 ></v-text-field>
                 <v-btn size="small" color="secondary" @click="createCategoryAndSelect">
                   Criar e usar
@@ -226,7 +218,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="showModal = false">Cancelar</v-btn>
-          <v-btn color="primary" @click="saveProduct">Salvar</v-btn>
+          <v-btn color="primary" @click="saveProduct" :disabled="!isFormValid">Salvar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -234,10 +226,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { ref, reactive, onMounted, computed, watch, nextTick } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useCartStore } from '~/stores/cart'
 import { useApi } from '~/services/api'
+import Swal from 'sweetalert2'
 
 const authStore = useAuthStore()
 const cartStore = useCartStore()
@@ -256,25 +249,53 @@ const addedMessage = ref('')
 const showNewCategoryFields = ref(false)
 const newCategoryName = ref('')
 const newCategoryDescription = ref('')
+const isFormValid = ref(false)
 
 const form = reactive({
   name: '',
   description: '',
   price: '',
   stockQuantity: 0,
-  categoryIds: [] as string[],   // agora é lista
+  categoryId: '',
   imageUrl: '',
 })
+
+const rules = {
+  required: (v: string) => !!v || 'Campo obrigatório.',
+}
 
 const sortOptions = [
   { text: 'Menor Preço', value: 'price_asc' },
   { text: 'Maior Preço', value: 'price_desc' },
 ]
 
+watch(() => form.price, (newValue) => {
+  if (typeof newValue !== 'string') return;
+  const digits = newValue.replace(/\D/g, '');
+  if (!digits) {
+    form.price = '';
+    return;
+  }
+  const numberValue = parseInt(digits) / 100;
+  form.price = numberValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+});
+
+function validateQuantity(product: any) {
+  nextTick(() => {
+    if (product.quantityToAdd > product.stockQuantity) {
+      product.quantityToAdd = product.stockQuantity
+    }
+    if (product.quantityToAdd < 1 && product.quantityToAdd !== null && product.quantityToAdd !== '') {
+      product.quantityToAdd = 1
+    }
+  })
+}
+
 async function handleImageUpload(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
+
   try {
     const { data } = await api.uploadImage(file)
     form.imageUrl = data.url
@@ -291,6 +312,7 @@ function formatPrice(value: any) {
 
 const categoryOptions = computed(() => {
   const opts = [...categories.value]
+  opts.unshift({ id: '', name: 'Nenhuma' })
   opts.push({ id: '__new__', name: '+ Nova categoria' })
   return opts
 })
@@ -318,11 +340,14 @@ function applyFilters() {
   loadProducts()
 }
 
-function onCategorySelectChange(selectedIds: any[]) {
-  if (selectedIds.includes('__new__')) {
+function onCategorySelectChange(selectedId: any) {
+  if (selectedId === '__new__') {
     showNewCategoryFields.value = true
-    // Remove o placeholder da seleção
-    form.categoryIds = selectedIds.filter(id => id !== '__new__')
+    setTimeout(() => {
+      if (form.categoryId === '__new__') {
+        form.categoryId = ''
+      }
+    }, 100)
   } else {
     showNewCategoryFields.value = false
   }
@@ -336,7 +361,7 @@ async function createCategoryAndSelect() {
       description: newCategoryDescription.value.trim() || '',
     })
     categories.value.push(data)
-    form.categoryIds.push(data.id)
+    form.categoryId = data.id
     showNewCategoryFields.value = false
     newCategoryName.value = ''
     newCategoryDescription.value = ''
@@ -357,9 +382,9 @@ function openEdit(p: any) {
   editingId.value = p.id
   form.name = p.name
   form.description = p.description || ''
-  form.price = p.price
+  form.price = formatPrice(p.price)
   form.stockQuantity = p.stockQuantity ?? 0
-  form.categoryIds = p.categories?.map((c: any) => c.id) || []
+  form.categoryId = p.categoryId || ''
   form.imageUrl = p.imageUrl || ''
   showModal.value = true
 }
@@ -370,7 +395,7 @@ function clearForm() {
   form.description = ''
   form.price = ''
   form.stockQuantity = 0
-  form.categoryIds = []
+  form.categoryId = ''
   form.imageUrl = ''
   showNewCategoryFields.value = false
   newCategoryName.value = ''
@@ -383,13 +408,22 @@ function openNewProduct() {
 }
 
 async function saveProduct() {
+  if (!isFormValid.value) return;
+
+  if (form.categoryId === '__new__') {
+    alert('Crie a nova categoria com "Criar e usar" ou escolha uma categoria existente.')
+    return
+  }
   try {
+    const priceString = String(form.price).replace('R$', '').trim();
+    const priceNumber = parseFloat(priceString.replace(/\./g, '').replace(',', '.'));
+
     const payload = {
       name: form.name,
       description: form.description,
-      price: Number(form.price),
+      price: priceNumber,
       stockQuantity: Number(form.stockQuantity) || 0,
-      categoryIds: form.categoryIds,
+      categoryId: form.categoryId || null,
       imageUrl: form.imageUrl,
     }
     if (editingId.value) {
@@ -406,12 +440,45 @@ async function saveProduct() {
 }
 
 async function confirmDelete(p: any) {
-  if (!confirm(`Excluir "${p.name}"?`)) return
-  try {
-    await api.deleteProduct(p.id)
-    loadProducts()
-  } catch {
-    alert('Erro ao excluir.')
+  const result = await Swal.fire({
+    title: 'Você tem certeza?',
+    text: `Deseja realmente excluir "${p.name}"? Esta ação não pode ser desfeita.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sim, excluir!',
+    cancelButtonText: 'Cancelar'
+  })
+
+  if (result.isConfirmed) {
+    try {
+      await api.deleteProduct(p.id)
+      Swal.fire(
+        'Excluído!',
+        'O produto foi removido com sucesso.',
+        'success'
+      )
+      loadProducts()
+    } catch (err: any) {
+      if (err.response?.status === 400 || err.response?.status === 409) {
+        Swal.fire({
+          title: 'Erro!',
+          text: 'Não é possível excluir este item porque há compras associadas a ele.',
+          icon: 'error',
+          confirmButtonText: 'Entendi',
+          confirmButtonColor: '#3085d6'
+        })
+      } else {
+        Swal.fire({
+          title: 'Erro!',
+          text: 'Ocorreu um erro ao tentar excluir o produto.',
+          icon: 'error',
+          confirmButtonText: 'Entendi',
+          confirmButtonColor: '#3085d6'
+        })
+      }
+    }
   }
 }
 
@@ -425,13 +492,11 @@ function addToCart(product: any) {
 
 <style scoped>
 .quantity-input :deep(.v-field__input) {
-  font-size: small;
   padding-top: 2px;
   padding-bottom: 2px;
-  padding-right: 5px;
-  min-height: 20px;
+  min-height: 32px;
 }
 .quantity-input :deep(.v-field) {
-  min-height: 20px;
+  min-height: 32px;
 }
 </style>
