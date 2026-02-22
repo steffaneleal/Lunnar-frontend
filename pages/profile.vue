@@ -125,6 +125,7 @@ import { ref, reactive, onMounted, watch } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useApi } from '~/services/api'
 import AddressForm from '~/components/AddressForm.vue'
+import Swal from 'sweetalert2'
 
 const authStore = useAuthStore()
 const api = useApi()
@@ -156,7 +157,6 @@ async function saveAccount() {
       name: accountForm.name.trim(),
       email: accountForm.email.trim(),
     })
-    // Atualiza o store e o localStorage com os novos dados
     authStore.setAuth(authStore.token, { ...authStore.user, name: data.name, email: data.email })
     accountModal.value = false
   } catch (err: any) {
@@ -242,14 +242,43 @@ async function handleNewAddress(addressData: any) {
 }
 
 async function confirmDeleteAddress(id: string) {
-  if (!confirm('Tem certeza que deseja excluir este endereço?')) return
+  const result = await Swal.fire({
+    title: 'Você tem certeza?',
+    text: "Deseja realmente excluir este endereço?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sim, excluir!',
+    cancelButtonText: 'Cancelar'
+  })
 
-  try {
-    await api.deleteMyAddress(id)
-    addresses.value = addresses.value.filter(addr => addr.id !== id)
-  } catch (err) {
-    console.error("Erro ao excluir endereço:", err)
-    alert('Não foi possível excluir o endereço. Tente novamente.')
+  if (result.isConfirmed) {
+    try {
+      await api.deleteMyAddress(id)
+      addresses.value = addresses.value.filter(addr => addr.id !== id)
+      Swal.fire(
+        'Excluído!',
+        'O endereço foi removido.',
+        'success'
+      )
+    } catch (err: any) {
+      if (err.response?.status === 400 || err.response?.status === 409) {
+        Swal.fire({
+          title: 'Erro!',
+          text: 'Não é possível excluir este endereço porque há compras associadas a ele.',
+          icon: 'error',
+          confirmButtonText: 'Entendi',
+          confirmButtonColor: '#3085d6'
+        })
+      } else {
+        Swal.fire(
+          'Erro!',
+          'Ocorreu um erro ao tentar excluir o endereço.',
+          'error'
+        )
+      }
+    }
   }
 }
 
