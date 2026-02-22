@@ -1,9 +1,8 @@
-<!-- HOME -->
 <template>
   <v-container>
     <div class="d-flex align-center mb-6">
-      <h1 class="text-h4.5">Olá, <span class="text-primary"> {{ authStore.user?.name || 'Usuário' }} </span> </h1>
-      <v-chip v-if="authStore.isAdmin" color="blue" class="ml-1" size="small">
+      <h1 class="text-h4.5">Olá, <span class="text-primary"> {{ firstName }} </span> </h1>
+      <v-chip v-if="authStore.isAdmin" color="blue" class="ml-4" size="small">
         Administrador
       </v-chip>
     </div>
@@ -28,6 +27,11 @@ import { computed } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
+
+const firstName = computed(() => {
+  const fullName = authStore.user?.name || 'Usuário'
+  return fullName.split(' ')[0]
+})
 
 const dashboardItems = computed(() => {
   const items = [
