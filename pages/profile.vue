@@ -61,7 +61,7 @@
                   <v-btn
                     class="delete-button"
                     :color="hoveredDeleteId === addr.id ? 'red' : 'grey'"
-                    :icon="hoveredDeleteId === addr.id ? 'mdi-delete' : 'mdi-delete'"
+                    :icon="hoveredDeleteId === addr.id ? 'mdi-delete-outline' : 'mdi-delete'"
                     variant="text"
                     @click="confirmDeleteAddress(addr.id)"
                     @mouseover="hoveredDeleteId = addr.id"
@@ -80,13 +80,28 @@
       <v-card>
         <v-card-title>Editar Dados da Conta</v-card-title>
         <v-card-text>
-          <v-text-field v-model="accountForm.name" label="Nome" variant="outlined" class="mb-2"></v-text-field>
-          <v-text-field v-model="accountForm.email" label="E-mail" type="email" variant="outlined" class="mb-2"></v-text-field>
+          <v-form v-model="isAccountFormValid" @submit.prevent="saveAccount">
+            <v-text-field
+              v-model="accountForm.name"
+              label="Nome"
+              variant="outlined"
+              class="mb-2"
+              :rules="[rules.required]"
+            ></v-text-field>
+            <v-text-field
+              v-model="accountForm.email"
+              label="E-mail"
+              type="email"
+              variant="outlined"
+              class="mb-2"
+              :rules="[rules.required, rules.email]"
+            ></v-text-field>
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="accountModal = false">Cancelar</v-btn>
-          <v-btn color="primary" :loading="savingAccount" @click="saveAccount">Salvar</v-btn>
+          <v-btn color="primary" :loading="savingAccount" @click="saveAccount" :disabled="!isAccountFormValid">Salvar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -106,13 +121,22 @@
       <v-card>
         <v-card-title>Editar Perfil</v-card-title>
         <v-card-text>
-          <v-text-field v-model="profileForm.companyName" label="Nome da Empresa" variant="outlined" class="mb-2"></v-text-field>
-          <v-text-field v-model="profileForm.phoneNumber" label="Telefone" variant="outlined" class="mb-2" maxlength="15"></v-text-field>
+          <v-form v-model="isProfileFormValid">
+            <v-text-field v-model="profileForm.companyName" label="Nome da Empresa" variant="outlined" class="mb-2"></v-text-field>
+            <v-text-field
+              v-model="profileForm.phoneNumber"
+              label="Telefone"
+              variant="outlined"
+              class="mb-2"
+              maxlength="15"
+              :rules="[rules.required]"
+            ></v-text-field>
+          </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="profileModal = false">Cancelar</v-btn>
-          <v-btn color="primary" @click="saveProfile">Salvar</v-btn>
+          <v-btn color="primary" @click="saveProfile" :disabled="!isProfileFormValid">Salvar</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -130,13 +154,20 @@ import Swal from 'sweetalert2'
 const authStore = useAuthStore()
 const api = useApi()
 
+const rules = {
+  required: (v: string) => !!v || 'Campo obrigatório.',
+  email: (v: string) => /.+@.+\..+/.test(v) || 'E-mail precisa ser válido.',
+}
+
 const profile = ref<any>(null)
 const loadingProfile = ref(false)
 const profileModal = ref(false)
+const isProfileFormValid = ref(false)
 const profileForm = reactive({ companyName: '', phoneNumber: '' })
 
 const accountModal = ref(false)
 const savingAccount = ref(false)
+const isAccountFormValid = ref(false)
 const accountForm = reactive({ name: '', email: '' })
 
 const addresses = ref<any[]>([])
@@ -151,6 +182,7 @@ function openAccountModal() {
 }
 
 async function saveAccount() {
+  if (!isAccountFormValid.value) return;
   savingAccount.value = true
   try {
     const { data } = await api.updateMe({
@@ -203,6 +235,7 @@ function openProfileModal() {
 }
 
 async function saveProfile() {
+  if (!isProfileFormValid.value) return;
   try {
     const payload = {
       companyName: profileForm.companyName,
@@ -268,13 +301,12 @@ async function confirmDeleteAddress(id: string) {
           title: 'Erro!',
           text: 'Não é possível excluir este endereço porque há compras associadas a ele.',
           icon: 'error',
-          confirmButtonText: 'Entendi',
-          confirmButtonColor: '#3085d6'
+          confirmButtonText: 'Entendi'
         })
       } else {
         Swal.fire(
           'Erro!',
-          'Ocorreu um erro ao tentar excluir o endereço.',
+          'Não foi possível excluir o endereço. Tente novamente.',
           'error'
         )
       }
@@ -287,3 +319,9 @@ onMounted(() => {
   loadAddresses()
 })
 </script>
+
+<style scoped>
+.delete-button {
+  transition: color 0.3s ease;
+}
+</style>

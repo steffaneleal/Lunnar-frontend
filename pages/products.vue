@@ -15,42 +15,42 @@
       <!-- Buscar por nome -->
       <v-col cols="12" md="5">
         <v-text-field
-            v-model="search"
-            label="Buscar por nome"
-            variant="outlined"
-            density="compact"
-            hide-details
-            @keyup.enter="applyFilters"
+          v-model="search"
+          label="Buscar por nome"
+          variant="outlined"
+          density="compact"
+          hide-details
+          @keyup.enter="applyFilters"
         ></v-text-field>
       </v-col>
 
       <!-- Selecionar categoria -->
       <v-col cols="12" md="3">
         <v-select
-            v-model="categoryId"
-            :items="categories"
-            item-title="name"
-            item-value="id"
-            label="Todas as categorias"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
+          v-model="categoryId"
+          :items="categories"
+          item-title="name"
+          item-value="id"
+          label="Todas as categorias"
+          variant="outlined"
+          density="compact"
+          hide-details
+          clearable
         ></v-select>
       </v-col>
 
       <!-- Ordenar por preço -->
       <v-col cols="12" md="3">
         <v-select
-            v-model="sortBy"
-            :items="sortOptions"
-            item-title="text"
-            item-value="value"
-            label="Ordenar por"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
+          v-model="sortBy"
+          :items="sortOptions"
+          item-title="text"
+          item-value="value"
+          label="Ordenar por"
+          variant="outlined"
+          density="compact"
+          hide-details
+          clearable
         ></v-select>
       </v-col>
 
@@ -69,15 +69,13 @@
       <v-col v-for="p in products" :key="p.id" cols="12" sm="6" md="3" lg="3">
         <v-card height="100%" class="d-flex flex-column">
           <v-img
-              :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
-              height="140px"
-              cover
+            :src="p.imageUrl || 'https://via.placeholder.com/300x200'"
+            height="140px"
+            cover
           ></v-img>
           <v-card-title class="d-flex align-center">
             <span>{{ p.name }}</span>
-            <template v-for="cat in (p.categories || [])" :key="cat.id">
-              <v-chip size="small" class="ml-2">{{ cat.name }}</v-chip>
-            </template>
+            <v-chip size="small" class="ml-2" v-if="p.categoryName">{{ p.categoryName }}</v-chip>
           </v-card-title>
           <v-card-subtitle class="text-primary font-weight-bold">
             R$ {{ formatPrice(p.price) }}
@@ -88,17 +86,17 @@
               <div class="text-caption">Estoque: {{ p.stockQuantity }}</div>
               <v-spacer></v-spacer>
               <v-text-field
-                  v-if="!authStore.isAdmin"
-                  v-model.number="p.quantityToAdd"
-                  type="number"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  min="1"
-                  :max="p.stockQuantity"
-                  class="quantity-input"
-                  style="max-width: 65px;"
-                  @update:modelValue="validateQuantity(p)"
+                v-if="!authStore.isAdmin"
+                v-model.number="p.quantityToAdd"
+                type="number"
+                density="compact"
+                variant="outlined"
+                hide-details
+                min="1"
+                :max="p.stockQuantity"
+                class="quantity-input"
+                style="max-width: 65px;"
+                @update:modelValue="validateQuantity(p)"
               ></v-text-field>
             </div>
           </v-card-text>
@@ -110,11 +108,11 @@
             </template>
             <template v-else>
               <v-btn
-                  block
-                  color="primary"
-                  variant="tonal"
-                  @click="addToCart(p)"
-                  :disabled="p.stockQuantity < 1"
+                block
+                color="primary"
+                variant="tonal"
+                @click="addToCart(p)"
+                :disabled="p.stockQuantity < 1"
               >
                 Adicionar ao carrinho
               </v-btn>
@@ -139,79 +137,76 @@
         <v-card-text>
           <v-form v-model="isFormValid" @submit.prevent="saveProduct">
             <v-file-input
-                label="Imagem do produto"
-                variant="outlined"
-                @change="handleImageUpload"
-                accept="image/*"
-                class="mb-2"
+              label="Imagem do produto"
+              variant="outlined"
+              @change="handleImageUpload"
+              accept="image/*"
+              class="mb-2"
             ></v-file-input>
             <v-img v-if="form.imageUrl" :src="form.imageUrl" height="150px" class="mb-4"></v-img>
 
             <v-text-field
-                v-model="form.name"
-                label="Nome"
-                variant="outlined"
-                class="mb-2"
-                :rules="[rules.required]"
+              v-model="form.name"
+              label="Nome"
+              variant="outlined"
+              class="mb-2"
+              :rules="[rules.required]"
             ></v-text-field>
             <v-textarea
-                v-model="form.description"
-                label="Descrição"
-                rows="2"
-                variant="outlined"
-                class="mb-2"
-                :rules="[rules.required]"
+              v-model="form.description"
+              label="Descrição"
+              rows="2"
+              variant="outlined"
+              class="mb-2"
+              :rules="[rules.required]"
             ></v-textarea>
             <v-row>
               <v-col cols="6">
                 <v-text-field
-                    v-model="form.price"
-                    label="Preço"
-                    prefix="R$"
-                    variant="outlined"
-                    :rules="[rules.required]"
+                  v-model="form.price"
+                  label="Preço"
+                  prefix="R$"
+                  variant="outlined"
+                  :rules="[rules.required]"
                 ></v-text-field>
               </v-col>
               <v-col cols="6">
                 <v-text-field
-                    v-model.number="form.stockQuantity"
-                    label="Estoque"
-                    type="number"
-                    min="0"
-                    variant="outlined"
+                  v-model.number="form.stockQuantity"
+                  label="Estoque"
+                  type="number"
+                  min="0"
+                  variant="outlined"
                 ></v-text-field>
               </v-col>
             </v-row>
 
             <v-select
-                v-model="form.categoryIds"
-                :items="categoryOptions"
-                item-title="name"
-                item-value="id"
-                label="Categorias"
-                variant="outlined"
-                multiple
-                chips
-                closable-chips
-                @update:model-value="onCategorySelectChange"
+              v-model="form.categoryId"
+              :items="categoryOptions"
+              item-title="name"
+              item-value="id"
+              label="Categoria"
+              variant="outlined"
+              @update:model-value="onCategorySelectChange"
             ></v-select>
 
             <v-expand-transition>
               <div v-if="showNewCategoryFields" class="pa-3 bg-gray rounded mb-3">
                 <p class="text-subtitle-2 mb-2">Nova Categoria</p>
                 <v-text-field
-                    v-model="newCategoryName"
-                    label="Nome da categoria"
-                    density="compact"
-                    variant="outlined"
-                    class="mb-2"
+                  v-model="newCategoryName"
+                  label="Nome da categoria"
+                  density="compact"
+                  variant="outlined"
+                  class="mb-2"
                 ></v-text-field>
                 <v-text-field
-                    v-model="newCategoryDescription"
-                    label="Descrição (opcional)"
-                    density="compact"
-                    variant="outlined"
-                    class="mb-2"
+                  v-model="newCategoryDescription"
+                  label="Descrição (opcional)"
+                  density="compact"
+                  variant="outlined"
+                  class="mb-2"
                 ></v-text-field>
                 <v-btn size="small" color="secondary" @click="createCategoryAndSelect">
                   Criar e usar
@@ -261,7 +256,7 @@ const form = reactive({
   description: '',
   price: '',
   stockQuantity: 0,
-  categoryIds: [] as string[],
+  categoryId: '',
   imageUrl: '',
 })
 
@@ -317,6 +312,7 @@ function formatPrice(value: any) {
 
 const categoryOptions = computed(() => {
   const opts = [...categories.value]
+  opts.unshift({ id: '', name: 'Nenhuma' })
   opts.push({ id: '__new__', name: '+ Nova categoria' })
   return opts
 })
@@ -344,11 +340,14 @@ function applyFilters() {
   loadProducts()
 }
 
-function onCategorySelectChange(selected: string[]) {
-  if (selected && selected.includes('__new__')) {
+function onCategorySelectChange(selectedId: any) {
+  if (selectedId === '__new__') {
     showNewCategoryFields.value = true
-    // Remove o placeholder __new__ da seleção imediatamente
-    form.categoryIds = form.categoryIds.filter((id: string) => id !== '__new__')
+    setTimeout(() => {
+      if (form.categoryId === '__new__') {
+        form.categoryId = ''
+      }
+    }, 100)
   } else {
     showNewCategoryFields.value = false
   }
@@ -362,7 +361,7 @@ async function createCategoryAndSelect() {
       description: newCategoryDescription.value.trim() || '',
     })
     categories.value.push(data)
-    form.categoryIds = [...form.categoryIds, data.id]
+    form.categoryId = data.id
     showNewCategoryFields.value = false
     newCategoryName.value = ''
     newCategoryDescription.value = ''
@@ -385,7 +384,7 @@ function openEdit(p: any) {
   form.description = p.description || ''
   form.price = formatPrice(p.price)
   form.stockQuantity = p.stockQuantity ?? 0
-  form.categoryIds = p.categories ? p.categories.map((c: any) => c.id) : []
+  form.categoryId = p.categoryId || ''
   form.imageUrl = p.imageUrl || ''
   showModal.value = true
 }
@@ -396,7 +395,7 @@ function clearForm() {
   form.description = ''
   form.price = ''
   form.stockQuantity = 0
-  form.categoryIds = []
+  form.categoryId = ''
   form.imageUrl = ''
   showNewCategoryFields.value = false
   newCategoryName.value = ''
@@ -411,7 +410,7 @@ function openNewProduct() {
 async function saveProduct() {
   if (!isFormValid.value) return;
 
-  if (form.categoryIds.includes('__new__')) {
+  if (form.categoryId === '__new__') {
     alert('Crie a nova categoria com "Criar e usar" ou escolha uma categoria existente.')
     return
   }
@@ -424,7 +423,7 @@ async function saveProduct() {
       description: form.description,
       price: priceNumber,
       stockQuantity: Number(form.stockQuantity) || 0,
-      categoryIds: form.categoryIds.filter((id: string) => id && id !== '__new__'),
+      categoryId: form.categoryId || null,
       imageUrl: form.imageUrl,
     }
     if (editingId.value) {
@@ -449,16 +448,19 @@ async function confirmDelete(p: any) {
     confirmButtonColor: '#3085d6',
     cancelButtonColor: '#d33',
     confirmButtonText: 'Sim, excluir!',
-    cancelButtonText: 'Cancelar'
+    cancelButtonText: 'Cancelar',
+    customClass: {
+      confirmButton: 'swal-confirm-button'
+    }
   })
 
   if (result.isConfirmed) {
     try {
       await api.deleteProduct(p.id)
       Swal.fire(
-          'Excluído!',
-          'O produto foi removido com sucesso.',
-          'success'
+        'Excluído!',
+        'O produto foi removido com sucesso.',
+        'success'
       )
       loadProducts()
     } catch (err: any) {
@@ -467,16 +469,14 @@ async function confirmDelete(p: any) {
           title: 'Erro!',
           text: 'Não é possível excluir este item porque há compras associadas a ele.',
           icon: 'error',
-          confirmButtonText: 'Entendi',
-          confirmButtonColor: '#3085d6'
+          confirmButtonText: 'Entendi'
         })
       } else {
         Swal.fire({
           title: 'Erro!',
           text: 'Ocorreu um erro ao tentar excluir o produto.',
           icon: 'error',
-          confirmButtonText: 'Entendi',
-          confirmButtonColor: '#3085d6'
+          confirmButtonText: 'Entendi'
         })
       }
     }
@@ -484,9 +484,23 @@ async function confirmDelete(p: any) {
 }
 
 function addToCart(product: any) {
-  const quantity = Math.max(1, product.quantityToAdd || 1)
-  cartStore.addItem(product, quantity)
-  addedMessage.value = `"${product.name}" (${quantity}) adicionado ao carrinho.`
+  const itemInCart = cartStore.items.find(item => item.id === product.id)
+  const currentQuantityInCart = itemInCart ? itemInCart.quantity : 0
+  const quantityToAdd = Math.max(1, product.quantityToAdd || 1)
+
+  if (currentQuantityInCart + quantityToAdd > product.stockQuantity) {
+    Swal.fire({
+      title: 'Estoque insuficiente!',
+      text: `Você já adicionou ${currentQuantityInCart} unidades deste item no carrinho. O estoque máximo é ${product.stockQuantity}.`,
+      icon: 'warning',
+      confirmButtonText: 'Entendi',
+      confirmButtonColor: '#3085d6'
+    })
+    return
+  }
+
+  cartStore.addItem(product, quantityToAdd)
+  addedMessage.value = `"${product.name}" (${quantityToAdd}) adicionado ao carrinho.`
   showSnackbar.value = true
 }
 </script>
@@ -499,5 +513,8 @@ function addToCart(product: any) {
 }
 .quantity-input :deep(.v-field) {
   min-height: 32px;
+}
+.swal-confirm-button {
+  color: white !important;
 }
 </style>
