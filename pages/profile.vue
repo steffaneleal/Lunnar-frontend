@@ -59,10 +59,13 @@
                 <v-list-item-subtitle>{{ addr.neighborhood }}, {{ addr.city }} - {{ addr.zip_code }}</v-list-item-subtitle>
                 <template v-slot:append>
                   <v-btn
-                      color="grey-lighten-1"
-                      icon="mdi-delete"
-                      variant="text"
-                      @click="confirmDeleteAddress(addr.id)"
+                    class="delete-button"
+                    :color="hoveredDeleteId === addr.id ? 'red' : 'grey'"
+                    :icon="hoveredDeleteId === addr.id ? 'mdi-delete' : 'mdi-delete'"
+                    variant="text"
+                    @click="confirmDeleteAddress(addr.id)"
+                    @mouseover="hoveredDeleteId = addr.id"
+                    @mouseleave="hoveredDeleteId = null"
                   ></v-btn>
                 </template>
               </v-list-item>
@@ -135,6 +138,11 @@ const accountModal = ref(false)
 const savingAccount = ref(false)
 const accountForm = reactive({ name: '', email: '' })
 
+const addresses = ref<any[]>([])
+const loadingAddresses = ref(false)
+const addressModal = ref(false)
+const hoveredDeleteId = ref<string | null>(null)
+
 function openAccountModal() {
   accountForm.name = authStore.user?.name || ''
   accountForm.email = authStore.user?.email || ''
@@ -158,11 +166,6 @@ async function saveAccount() {
     savingAccount.value = false
   }
 }
-
-
-const addresses = ref<any[]>([])
-const loadingAddresses = ref(false)
-const addressModal = ref(false)
 
 function formatPhone(phone: string) {
   if (!phone) return ''
