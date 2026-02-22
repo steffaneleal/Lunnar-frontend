@@ -4,30 +4,36 @@ Este é o repositório da interface da plataforma Lunnar, um CRM Inteligente des
 
 ## Sobre o Projeto
 
-O Lunnar Frontend fornece uma interface de usuário rica, reativa e totalmente responsiva para interagir com a API do Lunnar Backend. Ele permite que clientes naveguem pelos produtos, gerenciem seus carrinhos e pedidos, enquanto administradores possuem painéis dedicados para a gestão de produtos, clientes e categorias.
+O Lunnar Frontend fornece uma interface de usuário rica, reativa e totalmente responsiva para interagir com a API do Lunnar Backend. Ele permite que clientes naveguem pelos produtos e gerenciem seus pedidos, enquanto administradores possuem um painel de controle estratégico com KPIs (Key Performance Indicator - Indicador-Chave de Desempenho), gráficos e ferramentas avançadas para a gestão de produtos, clientes e categorias.
 
 ## Tecnologias Utilizadas
 
-*   **Nuxt 3**: Framework Vue.js para aplicações universais, renderização no servidor (SSR) e geração de sites estáticos.
+*   **Nuxt 3**: Framework Vue.js para aplicações universais e de página única (SPA).
 *   **Vue.js 3**: O framework progressivo para a construção da interface, utilizando a Composition API e `<script setup>`.
 *   **Vuetify**: Biblioteca de componentes Material Design para um design elegante e responsivo.
 *   **Pinia**: A solução de gerenciamento de estado oficial e intuitiva para Vue.js, utilizada para gerenciar o carrinho de compras e a sessão do usuário.
 *   **TypeScript**: Para um código mais robusto, escalável e com melhor autocompletar.
 *   **Axios**: Cliente HTTP para comunicação com a API RESTful do backend.
 *   **Vite**: Ferramenta de build moderna que oferece uma experiência de desenvolvimento extremamente rápida.
+*   **Chart.js & vue-chartjs**: Para a renderização de gráficos dinâmicos no dashboard.
+*   **SweetAlert2**: Para a criação de alertas e modais de confirmação elegantes e customizáveis.
 
 ## Funcionalidades Principais
 
-*   **Autenticação de Usuário**: Telas de login e registro com validação de formulário em tempo real.
+### Painel de Administração
+*   **Dashboard Estratégico**: Visualização de KPIs essenciais como Receita Total, Ticket Médio, Total de Pedidos e Clientes Ativos.
+*   **Gráficos Dinâmicos**: Análise visual da Receita por Região (gráfico de pizza) e Distribuição de Pedidos por Status.
+*   **CRM Avançado**: Gestão de clientes com acesso a relatórios individuais detalhados, incluindo histórico de compras, total gasto e tendências de comportamento.
+*   **Promoção de Usuários**: Capacidade de promover usuários comuns a administradores diretamente pela interface.
+*   **Gestão de Produtos e Categorias**: CRUD completo para produtos e categorias, com upload de imagens e validação de formulários.
+*   **Gestão de Pedidos**: Filtro de pedidos por status e capacidade de alterar o status de cada pedido.
+
+### Experiência do Cliente
 *   **Catálogo de Produtos Dinâmico**: Visualização de produtos com filtros por nome, categoria e ordenação por preço.
-*   **Carrinho de Compras Interativo**: Adição, remoção e visualização de itens no carrinho com estado gerenciado pelo Pinia.
-*   **Checkout Inteligente**: Formulário de endereço com preenchimento automático de rua, bairro, cidade e estado através da API do **ViaCEP**.
-*   **Gerenciamento de Perfil e Endereços**: O cliente pode visualizar e gerenciar seus dados e múltiplos endereços de entrega.
-*   **Painel de Administração**:
-    *   CRUD completo para Produtos, incluindo upload de imagens.
-    *   CRUD para Categorias.
-    *   Visualização de Clientes (CRM) com acesso a relatórios detalhados.
-    *   Visualização e gerenciamento de status de todos os pedidos.
+*   **Validação em Tempo Real**: Campos de quantidade com validação de estoque e máscaras para campos de telefone e preço, melhorando a experiência de preenchimento.
+*   **Checkout Inteligente**: Formulário de endereço com preenchimento automático via API do **ViaCEP**.
+*   **Gerenciamento de Perfil e Endereços**: O cliente pode visualizar, adicionar e remover múltiplos endereços de entrega, além de editar seus dados de perfil.
+*   **Cancelamento de Pedidos (Self-service)**: O cliente pode cancelar seus próprios pedidos enquanto o status ainda estiver "PENDENTE".
 
 ## Como Rodar o Projeto Localmente
 
@@ -72,5 +78,5 @@ O Lunnar Frontend fornece uma interface de usuário rica, reativa e totalmente r
 
 O projeto utiliza a seguinte API externa para melhorar a experiência do usuário:
 
-*   **ViaCEP**: Utilizada para o preenchimento automático de endereços a partir do CEP no formulário de checkout e de adição de endereço. Agradecimentos à equipe do ViaCEP por fornecer este serviço público de alta qualidade.
+*   **ViaCEP**: Utilizada para o preenchimento automático de endereços a partir do CEP. Agradecimentos à equipe do ViaCEP por fornecer este serviço público de alta qualidade.
     *   **URL**: `https://viacep.com.br`
