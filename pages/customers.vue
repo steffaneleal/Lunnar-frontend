@@ -16,11 +16,8 @@
       <v-col v-for="c in customers" :key="c.id" cols="12" md="6" lg="4">
         <v-card height="100%">
           <v-card-title class="d-flex justify-space-between align-center">
-            <div>
-              <span>{{ c.userName }}</span>
-              <span v-if="c.companyName" class="text-grey text-body-2 ml-2">({{ c.companyName }})</span>
-            </div>
-            <div>
+            <span class="text-truncate">{{ c.userName }}</span>
+            <div class="ml-2">
               <v-btn
                 icon="mdi-chart-bar"
                 size="small"
@@ -33,7 +30,7 @@
                 :icon="hoveredEditId === c.id ? 'mdi-pencil' : 'mdi-pencil'"
                 size="small"
                 variant="text"
-                :color="hoveredEditId === c.id ? 'red' : 'grey'"
+                :color="hoveredEditId === c.id ? 'secondary' : 'grey'"
                 @click="openEdit(c)"
                 title="Editar"
                 @mouseover="hoveredEditId = c.id"
@@ -42,6 +39,7 @@
               ></v-btn>
             </div>
           </v-card-title>
+          <v-card-subtitle v-if="c.companyName" class="company-subtitle pb-0">{{ c.companyName }}</v-card-subtitle>
           <v-card-text>
             <p class="mb-1"><strong>E-mail:</strong> {{ c.userEmail }}</p>
             <p v-if="c.phoneNumber" class="mb-1"><strong>Telefone:</strong> {{ formatPhone(c.phoneNumber) }}</p>
@@ -183,6 +181,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useApi } from '~/services/api'
+import Swal from 'sweetalert2'
 
 const api = useApi()
 
@@ -278,7 +277,7 @@ async function loadCustomers() {
   loading.value = true
   try {
     const { data } = await api.getCustomers()
-    customers.value = data
+    customers.value = data.filter((c: any) => c.userRole !== 'ADMIN')
   } finally {
     loading.value = false
   }
@@ -311,3 +310,9 @@ async function saveCustomer() {
 
 onMounted(loadCustomers)
 </script>
+
+<style scoped>
+.company-subtitle {
+  margin-top: -15px;
+}
+</style>
